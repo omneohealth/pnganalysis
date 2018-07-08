@@ -77,14 +77,17 @@ for(i in fileNames) {
 # Get province, district and facility codes
 #
 ################################################################################
-
+#
+# Extract first two digits from code
+#
 png_maternal$pcode <- floor(png_maternal$X__1 / 10000)
-
 #
 # pad the pcode with a 0 at the start
 #
 png_maternal$pcode <- str_pad(string = png_maternal$pcode, width = 2, side = "left", pad = "0")
-
+#
+# Extract first 4 digits from code
+#
 png_maternal$dcode <- floor(png_maternal$X__1 / 100)
 #
 # pad the dcode with a 0 at the start
@@ -155,6 +158,8 @@ write.csv(varNames, "codebook.csv", row.names = FALSE)
 
 names(png_maternal) <- shortName
 
+write.csv(png_maternal, "png_maternal.csv", row.names = FALSE, quote = TRUE)
+
 ################################################################################
 #
 # Aggregate data by province and by district per year (2015, 2016)
@@ -184,4 +189,4 @@ districtdata <- aggregate(
 # Save province and district aggregats as CSV file
 #
 write.csv(provincedata, "provincedata.csv", row.names = FALSE)
-write.csv(provincedata, "districtdata.csv", row.names = FALSE)
+write.csv(districtdata, "districtdata.csv", row.names = FALSE)
