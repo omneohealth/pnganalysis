@@ -79,7 +79,21 @@ for(i in fileNames) {
 ################################################################################
 
 png_maternal$pcode <- floor(png_maternal$X__1 / 10000)
+#
+# pad the pcode with a 0 at the start
+#
+png_maternal$pcode <- str_pad(string = png_maternal$pcode, width = 2, side = "left", pad = "0")
+
 png_maternal$dcode <- floor(png_maternal$X__1 / 100)
+#
+# pad the dcode with a 0 at the start
+#
+png_maternal$dcode <- str_pad(string = png_maternal$dcode, width = 4, side = "left", pad = "0")
+#
+# pad the code with a 0 at the start
+#
+png_maternal$X__1 <- str_pad(string = png_maternal$X__1, width = 6, side = "left", pad = "0")
+
 
 ################################################################################
 #
