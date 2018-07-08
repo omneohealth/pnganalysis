@@ -15,7 +15,7 @@ if(!require(raster, quietly = TRUE)) install.packages("raster")     # If raster 
 #
 if(!require(devtools, quietly = TRUE)) install.packages("devtools") # If devtools required but not installed, install
 install_github("OMNeoHealth/papuanewguinea")                        # Install OMNeoHealth/papuanewguinea from GitHub
-library(papuanewguinea)                                            # Load papuanewguinea package
+library(papuanewguinea)                                             # Load papuanewguinea package
 
 
 ################################################################################
@@ -37,10 +37,6 @@ country@data
 province@data
 district@data
 llg@data
-
-
-head(healthfacility)
-
 #
 #
 #
@@ -69,37 +65,50 @@ plot(province, lwd = 1, border = "gray50",
 #
 # province pcode 08, 09, 20, 22 in green, rest blue
 #
+plot(province, lwd = 1, border = "gray50", 
+     col = ifelse(province@data$ADM1_PCODE %in% c("08", "09", "20", "22"), "green", "blue"))
 
-
+################################################################################
+#
+# Map make believe data on immunisation coverage
+#
+################################################################################
 #
 # create sample data for immunisation coverage per province
 #
 imm <- sample(0:100, 22, replace = TRUE)
-
+#
+# Add imm to province data
+#
 province@data$imm <- imm
-
-head(province@data)
-
-?cut
-
+#
+# Create immunisation coverage classes
+#
 province@data$immclass <- base::cut(x = province@data$imm, 
   breaks = c(0, 20, 40, 60, 80, 100), 
   labels = FALSE)
-
+#
+# Specify mapping colour scheme
+#
 colourscheme <- c("#eff3ff", "#c6dbef", "#9ecae1", 
                   "#6baed6", "#3182bd", "#08519c")
-
-
+#
+# Plot immunisation coverage results
+#
 plot(province, lwd = 1, border = "gray50", 
      col = ifelse(province@data$immclass == 0, colourscheme[1],
              ifelse(province@data$immclass == 1, colourscheme[2],
                ifelse(province@data$immclass == 2, colourscheme[3],
                  ifelse(province@data$immclass == 3, colourscheme[4],
                    ifelse(province@data$immclass == 4, colourscheme[5], colourscheme[6]))))))
-
+#
+# Plot immunisation coverage results - elegant and efficient solution
+#
 plot(province, lwd = 1, border = "gray50", 
      col = colourscheme[province@data$immclass + 1])
-
+#
+# Add province names
+#
 text(x = province, labels = "ADM1_EN", cex = 0.3)
 
 ################################################################################
