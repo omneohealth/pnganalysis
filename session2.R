@@ -1,38 +1,34 @@
+################################################################################
 #
-# install readxl package
+# Session 2: Reading and manipulating data
 #
-install.packages(pkgs = "readxl")
-install.packages(pkgs = "stringr")
+################################################################################
+
+################################################################################
 #
-# load readxl package
+# Check if required packages are installed. If not, install and load
+# required packages
 #
-library(readxl)
-library(stringr)
+################################################################################
+
+if(!require(readxl)) install.packages("readxl")   # to read Excel files
+if(!require(stringr)) install.packages("stringr") # to manipulate strings
+
+################################################################################
+#
+# Practice reading `apr 2015.xlsx`
+#
+################################################################################
 #
 # Use read_xlsx() to read apr 2015.xlsx
 #
 apr2015 <- read_xlsx(path = "data/apr 2015.xlsx", 
                      col_names = FALSE, 
                      skip = 3)
-#
-# Extract header rows from XLSX
-#
-headerRow <- read_xlsx(path = "data/apr 2015.xlsx",
-                       col_names = FALSE, 
-                       range = "A3:AH3")
-#
-# make headerRow into character vector
-#
-headerRow <- as.vector(headerRow, mode = "character")
-#
-# user headerRow as column names of apr2015 using names()
-#
-names(apr2015) <- headerRow
 
 ################################################################################
 #
 # Read all files in data folder and concatenate into single data object
-#
 #
 ################################################################################
 #
@@ -53,20 +49,6 @@ for(i in fileNames) {
   temp <- read_xlsx(path = paste("data/", i, sep = ""), 
                     col_names = FALSE, 
                     skip = 3)
-  #
-  # Extract header rows from XLSX
-  #
-  headerRow <- read_xlsx(path = paste("data/", i, sep = ""),
-                         col_names = FALSE, 
-                         range = "A3:AH3")
-  #
-  # make headerRow into character vector
-  #
-  #headerRow <- as.vector(headerRow, mode = "character")
-  #
-  # user headerRow as column names of apr2015 using names()
-  #
-  #names(temp) <- headerRow
   #
   # extract month of current data
   #
@@ -92,12 +74,20 @@ for(i in fileNames) {
 
 ################################################################################
 #
-# Created codebook for PNG maternal mortality data
-#
+# Get province, district and facility codes
 #
 ################################################################################
 
-longName  <- c("Five-digit code of facility composed of two-digit Province code and three-digit district code",
+png_maternal$pcode <- floor(png_maternal$X__1 / 10000)
+png_maternal$dcode <- floor(png_maternal$X__1 / 100)
+
+################################################################################
+#
+# Created codebook for PNG maternal mortality data
+#
+################################################################################
+
+longName  <- c("Five to six-digit facility code",
                "Name of facility",
                "Report recieved? 1 = YES; 2 = NO",
                "New attendance breastfeeding pills",
@@ -130,7 +120,11 @@ longName  <- c("Five-digit code of facility composed of two-digit Province code 
                "Born before arrival",
                "Delivery complications",
                "Maternal deaths not in facility",
-               "Transferred to hospital")
+               "Transferred to hospital",
+               "Month", 
+               "Year",
+               "Province code (one- to two-digit code; ",
+               "District code (three- to four-digit code")
 
 
 shortName <- c("code", "facility", "report",
@@ -138,59 +132,41 @@ shortName <- c("code", "facility", "report",
                "bfpills2", "combpills2", "inj2", "iud2", "ovulation2", "condom2",
                "anc1", "anc4", "ancother", "tt1", "tt2", "ttbooster", "uno2",
                "delhf", "deadhf", "lbw", "still", "vbsup", "vbcomp", "bba", 
-               "delcomp", "deadnothf", "transhop")
+               "delcomp", "deadnothf", "transhop", "month", "year", "pcode", "dcode")
 
 varNames <- data.frame(shortName, longName)
 
 write.csv(varNames, "codebook.csv", row.names = FALSE)
 
-names(png_maternal) <- c(shortName, "month", "year")
-
-
-################################################################################
-#
-# Get province, district and facility codes
-#
-################################################################################
-
-#x <- png_maternal[png_maternal$month == "apr" & png_maternal$year == 2015, ]
-
-#pcode <- floor(x$code / 10000)
-
-#dcode <- floor(x$code / 100)
-
-png_maternal$pcode <- floor(png_maternal$code / 10000)
-png_maternal$dcode <- floor(png_maternal$code / 100)
-
-names(png_maternal) <- c(shortName, "month", "year", "pcode", "dcode")
-
+names(png_maternal) <- shortName
 
 ################################################################################
 #
 # Aggregate data by province and by district per year (2015, 2016)
 #
 ################################################################################
-
-png_2015 <- png_maternal[png_maternal$year == 2015, ]
 #
-# Aggregate 2015 data by province
+# Aggregate data by province and per year
 #
-pdata2015 <- aggregate(
+provincedata <- aggregate(
   cbind(bfpills1, combpills1, inj1, uno1, vasectomy, iud1, ovulation1, 
         condom1, bfpills2, combpills2, inj2, iud2, ovulation2, condom2,
         anc1, anc4, ancother, tt1, tt2, ttbooster, uno2,
         delhf, deadhf, lbw, still, vbsup, vbcomp, bba, 
-        delcomp, deadnothf, transhop) ~ pcode, 
-  data = png_2015, FUN = sum)
-
-
-ddata2015 <- aggregate(
+        delcomp, deadnothf, transhop) ~ pcode + year, 
+  data = png_maternal, FUN = sum)
+#
+# Aggregate data by district and per year
+#
+districtdata <- aggregate(
   cbind(bfpills1, combpills1, inj1, uno1, vasectomy, iud1, ovulation1, 
         condom1, bfpills2, combpills2, inj2, iud2, ovulation2, condom2,
         anc1, anc4, ancother, tt1, tt2, ttbooster, uno2,
         delhf, deadhf, lbw, still, vbsup, vbcomp, bba, 
-        delcomp, deadnothf, transhop) ~ dcode, 
-  data = png_2015, FUN = sum)
-
-
-
+        delcomp, deadnothf, transhop) ~ dcode + year, 
+  data = png_maternal, FUN = sum)
+#
+# Save province and district aggregats as CSV file
+#
+write.csv(provincedata, "provincedata.csv", row.names = FALSE)
+write.csv(provincedata, "districtdata.csv", row.names = FALSE)
