@@ -35,5 +35,5 @@
 "transhop","Transferred to hospital"
 "month","Month"
 "year","Year"
-"pcode","Province code (one- to two-digit code; "
-"dcode","District code (three- to four-digit code"
+"pcode","Province code"
+"dcode","District code"
