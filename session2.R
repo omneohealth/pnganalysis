@@ -141,8 +141,8 @@ longName  <- c("Five to six-digit facility code",
                "Transferred to hospital",
                "Month", 
                "Year",
-               "Province code (one- to two-digit code; ",
-               "District code (three- to four-digit code")
+               "Province code",
+               "District code")
 
 
 shortName <- c("code", "facility", "report",
