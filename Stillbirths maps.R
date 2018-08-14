@@ -72,4 +72,46 @@ plot (province, lwd = 1, border = "gray50",
                                         ifelse(still2016pclass == 4, colourscheme[5],
                                                ifelse(still2016pclass == 5, colourscheme[6], colourscheme[7])))))))
 
+##################################################################################################
+# plots for ANC visits and province per year
+##################################################################################################
 
+#create a variable of ANC1 and ANC4 normalised
+anc1norm2015 <-(pdata2015$anc1/femprov)*100000
+anc1norm2016 <-(pdata2016$anc1/femprov)*100000
+
+anc4norm2015 <-(pdata2015$anc4/femprov)*100000
+anc4norm2016 <-(pdata2016$anc4/femprov)*100000
+
+
+# plot ANC1 per year per province
+plot (pdata2015$pcode, anc1norm2015)
+plot (pdata2016$pcode, anc1norm2016)
+
+# plot ANC4 visit per year per province
+plot (pdata2015$pcode, anc4norm2015)
+plot (pdata2016$pcode, anc4norm2016)
+
+#label axis
+plot(pdata2015$pcode, anc1norm2015 , xlab="Province", ylab="Number of ANC1 visits")
+plot(pdata2015$pcode, anc4norm2015, xlab="Province", ylab="Number of ANC4 visits")
+
+# chart lines for ANC1 and ANC4 2015
+plot(anc1norm2015,type = "o",col = "red", xlab = "Province", ylab = "Number of ANC visits", 
+     main = "ANC visits per province in 2015")
+lines(anc4norm2015, type = "o", col = "blue")
+
+#char line for ANC1 and ANC4 2016
+plot(anc1norm2016,type = "o",col = "red", xlab = "Province", ylab = "Number of ANC visits", 
+     main = "ANC visits per province in 2016")
+lines(anc4norm2016, type = "o", col = "blue")
+
+# compare ANC1 2015 vs 2016
+plot(anc1norm2015,type = "o",col = "red", xlab = "Province", ylab = "Number of ANC visits", 
+     main = "ANC1 visits per province in 2015 and 2016")
+lines(anc1norm2016, type = "o", col = "blue")
+
+# compare ANC4 2015 vs 2016
+plot(anc4norm2015,type = "o",col = "red", xlab = "Province", ylab = "Number of ANC visits", 
+     main = "ANC4 visits per province in 2015 and 2016")
+lines(anc4norm2016, type = "o", col = "blue")
