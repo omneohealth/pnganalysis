@@ -1,0 +1,57 @@
+# Save province and district aggregats as CSV file
+#
+write.csv(provincedata, "provincedata.csv", row.names = FALSE)
+write.csv(provincedata, "districtdata.csv", row.names = FALSE)
+
+if(!require(devtools, quietly = TRUE)) install.packages("devtools") # If devtools required but not installed, install
+install_github("OMNeoHealth/papuanewguinea")                        # Install OMNeoHealth/papuanewguinea from GitHub
+library(papuanewguinea)                                             # Load papuanewguinea package
+
+pop_adm1     # province level population
+pop_adm2     # district level population
+pop_adm3     # local government population
+
+###################################################################
+#map maternal mortality
+###################################################################
+pdata <- read.csv("provincedata.csv")
+head(pdata)
+
+pdata2016 <- pdata[pdata$year == 2016, ]
+
+#
+# Add deadhf + deadnothf for total deaths
+#
+pdata2016$totaldead <- pdata2016$deadhf + pdata2016$deadnothf
+
+#
+# create variable females in province
+#
+femprov <- pop_adm1$FEMALES
+
+# use femprov to normalise maternal deaths per province
+
+pop <- data.frame("pcode" = 1:22, "pop" = deathprov2016)
+
+pdata2016 <- merge(pdata2016, pop, by = "pcode")
+
+# map FEMALES=maternal deaths per province normalised by total women per province x 100000
+#
+# first create classification of maternal deaths
+#
+deathprov2016class <- base::cut(x=deathprov2016, 
+                                breaks = c(0, 10, 20, 40, 60, 80, 100), 
+                                labels = FALSE)
+
+###### create colourscheme and provide color for classification per province of mat deaths
+colourscheme <- c("#eff3ff", "#c6dbef", "#9ecae1", 
+                  "#6baed6", "#3182bd", "#08519c")
+
+plot (province, lwd = 1, border = "gray50", 
+      col = ifelse(deathprov2016class == 0, colourscheme[1],
+                   ifelse(deathprov2016class == 1, colourscheme[2],
+                          ifelse(deathprov2016class == 2, colourscheme[3],
+                                 ifelse(deathprov2016class == 3, colourscheme[4],
+                                        ifelse(deathprov2016class == 4, colourscheme[5],
+                                               ifelse(deathprov2016class == 5, colourscheme[6], colourscheme[7])))))))
+
