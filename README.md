@@ -12,13 +12,18 @@ This is a collection of R scripts written to analyse the data from OMNeoHealth's
 
 ## Authors
 
-Sophie Janet
-Vivienne Kuma
-Scholar Zakayo
-Laura Naidi
-Proohista Ariana
-Ernest Guevarra
+* Sophie Janet
+
+* Vivienne Kuma
+
+* Scholar Zakayo
+
+* Laura Naidi
+
+* Proohista Ariana
+
+* Ernest Guevarra
 
 ## License
 
-MIT License
+[MIT License](https://github.com/OMNeoHealth/pnganalysis/blob/master/LICENSE.md)
