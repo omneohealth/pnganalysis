@@ -553,10 +553,159 @@ mDistrict <- merge(wra_adm2, mDistrict, by.x = "ADM2_PCODE", by.y = "dcode")
 
 We now have processed datasets for time series province and district data that has all the information needed to produce various analysis outputs.
 
+# 3. Indicators
+
+Given the Papua New Guinea NHIS data, the following indicators can be possibly calculated:
+
+* Number of pregnant women who has had at least one antenatal care visit (ANC) with a trained health worker per 100,000 women of reproductive age
+
+&nbsp;
+
+$$\begin{aligned}
+n_{anc1} & ~ \div ~ \frac{n_{WRA}}{100000}\\
+\\
+where: & \\
+\\
+n_{anc1} ~ = ~ & \text{Number of pregnant women who has had at least 1 ANC visit} \\
+& \text{with a trained health worker} \\
+n_{WRA} ~ = ~ & \text{Number of women of reproductive age}
+\end{aligned}$$
+
+&nbsp;
+
+* Number of pregnant women who has had at least four antenatal care visits (ANC) with any service provider per 100,000 women of reproductive age
+
+&nbsp;
+
+$$\begin{aligned}
+n_{anc4} & ~ \div ~ \frac{n_{WRA}}{100000}\\
+\\
+where: & \\
+\\
+n_{anc4} ~ = ~ & \text{Number of pregnant women who has had at least 4 ANC visits} \\
+& \text{with any service provider} \\
+n_{WRA} ~ = ~ & \text{Number of women of reproductive age}
+\end{aligned}$$
+
+&nbsp;
+
+* Number of pregnant women who received first tetanus toxoid vaccination per 100,000 women of reproductive age
+
+&nbsp;
+
+$$\begin{aligned}
+n_{tt1} & ~ \div ~ \frac{n_{WRA}}{100000}\\
+\\
+where: & \\
+\\
+n_{tt1} ~ = ~ & \text{Number of pregnant women who received} \\
+& \text{first tetanus toxoid vaccination} \\
+n_{WRA} ~ = ~ & \text{Number of women of reproductive age}
+\end{aligned}$$
+
+&nbsp;
+
+* Number of pregnant women who received second tetanus toxoid vaccination per 100,000 women of reproductive age
+
+&nbsp;
+
+$$\begin{aligned}
+n_{tt2} & ~ \div ~ \frac{n_{WRA}}{100000}\\
+\\
+where: & \\
+\\
+n_{tt2} ~ = ~ & \text{Number of pregnant women who received} \\
+& \text{second tetanus toxoid vaccination} \\
+n_{WRA} ~ = ~ & \text{Number of women of reproductive age}
+\end{aligned}$$
+
+&nbsp;
+
+* Number of pregnant women who received tetanus toxoid booster vaccination per 100,000 women of reproductive age
+
+&nbsp;
+
+$$\begin{aligned}
+n_{ttbooster} & ~ \div ~ \frac{n_{WRA}}{100000}\\
+\\
+where: & \\
+\\
+n_{ttbooster} ~ = ~ & \text{Number of pregnant women who received} \\
+& \text{tetanus toxoid booster vaccination} \\
+n_{WRA} ~ = ~ & \text{Number of women of reproductive age}
+\end{aligned}$$
+
+&nbsp;
+
+* Number of pregnant women who delivered in a health facility per 100,000 women of reproductive age
+
+&nbsp;
+
+$$\begin{aligned}
+n_{delhf} & ~ \div ~ \frac{n_{WRA}}{100000}\\
+\\
+where: & \\
+\\
+n_{delhf} ~ = ~ & \text{Number of pregnant women who delivered} \\
+& \text{in a health facility} \\
+n_{WRA} ~ = ~ & \text{Number of women of reproductive age}
+\end{aligned}$$
+
+&nbsp;
+
+* Number of pregnant women who delivered a low birth weight child per 100,000 women of reproductive age
+
+&nbsp;
+
+$$\begin{aligned}
+n_{lbw} & ~ \div ~ \frac{n_{WRA}}{100000}\\
+\\
+where: & \\
+\\
+n_{lbw} ~ = ~ & \text{Number of pregnant women who delivered} \\
+& \text{a low birth weight child} \\
+n_{WRA} ~ = ~ & \text{Number of women of reproductive age}
+\end{aligned}$$
+
+&nbsp;
+
+* Number of pregnant women who delivered a stillbirth per 100,000 women of reproductive age
+
+&nbsp;
+
+$$\begin{aligned}
+n_{still} & ~ \div ~ \frac{n_{WRA}}{100000}\\
+\\
+where: & \\
+\\
+n_{still} ~ = ~ & \text{Number of pregnant women who delivered} \\
+& \text{a stillbirth} \\
+n_{WRA} ~ = ~ & \text{Number of women of reproductive age}
+\end{aligned}$$
+
+&nbsp;
+
+* Number of pregnant women who died during childbirth per 100,000 women of reproductive age
+
+&nbsp;
+
+$$\begin{aligned}
+n_{deadhf} ~ + ~ n_{deadnothf} & ~ \div ~ \frac{n_{WRA}}{100000}\\
+\\
+where: & \\
+\\
+n_{deadhf} ~ = ~ & \text{Number of pregnant women who died} \\
+& \text{during childbirth at health facility} \\
+n_{deadnothf} ~ = ~ & \text{Number of pregnant women who died} \\
+& \text{during childbirth outside of health facility} \\
+n_{WRA} ~ = ~ & \text{Number of women of reproductive age}
+\end{aligned}$$
+
+&nbsp;
 
 # 2. Time-series analysis of monthly NHIS data
 
-
+Using the data frame objects mProvince and mDistricts, we can now produce time-series analysis of specific indicators
 
 
 
