@@ -502,6 +502,11 @@ For the district data, we will need to make the same adjustments we did to the d
 
 &nbsp;
 
+```{r, echo = FALSE, eval = TRUE}
+mDistrict$dcode <- as.numeric(mDistrict$dcode)
+mDistrict$year <- as.numeric(mDistrict$year)
+```
+
 ```{r, echo = TRUE, eval = TRUE}
 x <- aggregate(
        cbind(dcode, year, bfpills1, combpills1, inj1, uno1, vasectomy, iud1, 
@@ -513,14 +518,13 @@ x <- aggregate(
                           mDistrict$year == 2015, ], 
        FUN = sum)
 
-
 y <- aggregate(
        cbind(dcode, year, bfpills1, combpills1, inj1, uno1, vasectomy, iud1, 
              ovulation1, condom1, bfpills2, combpills2, inj2, iud2, ovulation2, 
              condom2, anc1, anc4, ancother, tt1, tt2, ttbooster, uno2, 
              delhf, deadhf, lbw, still, vbsup, vbcomp, bba, delcomp, deadnothf, 
              transhop) ~ month, 
-       data = mDistrict[mDistrict$dcode %in% c(401, 402, 403) & 
+       data = mDistrict[mDistrict$dcode %in% c(401, 402, 403) &
                           mDistrict$year == 2016, ], 
        FUN = sum)
 
@@ -545,7 +549,14 @@ The resulting `mDistrict` data can now be merged with the district population da
 mDistrict <- merge(wra_adm2, mDistrict, by.x = "ADM2_PCODE", by.y = "dcode")
 ```
 
+&nbsp;
+
 We now have processed datasets for time series province and district data that has all the information needed to produce various analysis outputs.
+
+
+# 2. Time-series analysis of monthly NHIS data
+
+
 
 
 
