@@ -20,6 +20,8 @@ if(!require(rgdal, quietly = TRUE)) install.packages("rgdal")       # If rgdal r
 if(!require(raster, quietly = TRUE)) install.packages("raster")     # If raster required but not installed, install
 if(!require(readxl)) install.packages("readxl")                     # to read Excel files
 if(!require(stringr)) install.packages("stringr")                   # to manipulate strings
+if(!require(ggplot2)) install.packages("ggplot2")                   # for plotting
+if(!require(zoo)) install.packages("zoo")                           # for dates
 #
 # install papuanewguinea R package from OMNeoHealth Github; devtools
 #
@@ -705,9 +707,47 @@ n_{WRA} ~ = ~ & \text{Number of women of reproductive age}
 
 # 2. Time-series analysis of monthly NHIS data
 
-Using the data frame objects mProvince and mDistricts, we can now produce time-series analysis of specific indicators
+Using the data frame objects mProvince and mDistricts, we can now produce time-series analysis of specific indicators specified above.
 
+## At least one antenatal care visit with a trained health worker
 
+We first work with the province data.
+
+We will work with the data columns labeled `anc1` and `sf`
+
+```{r, echo = TRUE, eval = TRUE}
+temp1 <- aggregate(anc1 ~ ADM1_PCODE + ADM1_EN + month + year, data = mProvince, FUN = sum)
+temp2 <- aggregate(sf ~ ADM1_PCODE + ADM1_EN + month + year, data = mProvince, FUN = unique)
+
+temp1$anc1Std <- temp1$anc1 / temp2$sf
+
+temp1$month <- as.character(temp1$month)
+
+temp1$month[temp1$month == "jan"] <- 1
+temp1$month[temp1$month == "feb"] <- 2
+temp1$month[temp1$month == "mar"] <- 3
+temp1$month[temp1$month == "apr"] <- 4
+temp1$month[temp1$month == "may"] <- 5
+temp1$month[temp1$month == "jun"] <- 6
+temp1$month[temp1$month == "jul"] <- 7
+temp1$month[temp1$month == "aug"] <- 8
+temp1$month[temp1$month == "sep"] <- 9
+temp1$month[temp1$month == "oct"] <- 10
+temp1$month[temp1$month == "nov"] <- 11
+temp1$month[temp1$month == "dec"] <- 12
+
+temp1$date <- paste(temp1$year, temp1$month, sep = "-")
+
+temp1$date <- zoo::as.yearmon(temp1$date) 
+```
+
+\newpage
+
+```{r, echo = TRUE, eval = TRUE, fig.pos = "H", fig.retina = 1}
+ggplot(temp1, aes(as.Date(date), anc1Std)) + 
+  geom_line() + 
+  facet_wrap(vars(ADM1_EN), ncol = 6, nrow = 4)
+```
 
 
 
