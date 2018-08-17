@@ -494,6 +494,10 @@ We can then merge these datasets with the population data that contains the stan
 
 &nbsp;
 
+```{r, echo = FALSE, eval = TRUE}
+mProvince$pcode <- as.numeric(mProvince$pcode)
+```
+
 ```{r, echo = TRUE, eval = TRUE}
 mProvince <- merge(wra_adm1, mProvince, by.x = "ADM1_PCODE", by.y = "pcode")
 ```
@@ -716,8 +720,12 @@ We first work with the province data.
 We will work with the data columns labeled `anc1` and `sf`
 
 ```{r, echo = TRUE, eval = TRUE}
-temp1 <- aggregate(anc1 ~ ADM1_PCODE + ADM1_EN + month + year, data = mProvince, FUN = sum)
-temp2 <- aggregate(sf ~ ADM1_PCODE + ADM1_EN + month + year, data = mProvince, FUN = unique)
+temp1 <- aggregate(anc1 ~ ADM1_PCODE + ADM1_EN + month + year, 
+                   data = mProvince, 
+                   FUN = sum)
+temp2 <- aggregate(sf ~ ADM1_PCODE + ADM1_EN + month + year, 
+                   data = mProvince, 
+                   FUN = unique)
 
 temp1$anc1Std <- temp1$anc1 / temp2$sf
 
@@ -738,16 +746,325 @@ temp1$month[temp1$month == "dec"] <- 12
 
 temp1$date <- paste(temp1$year, temp1$month, sep = "-")
 
-temp1$date <- zoo::as.yearmon(temp1$date) 
+temp1$date <- zoo::as.yearmon(temp1$date)
 ```
 
 \newpage
 
-```{r, echo = FALSE, eval = TRUE, fig.pos = "H", fig.retina = 1}
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 12, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(temp1, aes(as.Date(date), anc1Std)) + 
   geom_line() + 
-  facet_wrap(vars(ADM1_EN), ncol = 5)
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(temp1$anc1Std), 
+                                  by = 500)) + 
+  facet_wrap(vars(ADM1_EN))
+```
+
+\newpage
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 12, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(temp1, aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(temp1$anc1Std), 
+                                  by = 500)) + 
+  facet_wrap(vars(ADM1_EN))
+```
+
+\newpage
+
+We now work with the district data.
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+dist1 <- aggregate(anc1 ~ ADM2_PCODE + ADM2_EN + ADM1_PCODE + ADM1_EN + month + year, 
+                   data = mDistrict, 
+                   FUN = sum)
+dist2 <- aggregate(sf ~ ADM2_PCODE + ADM2_EN + ADM1_PCODE + ADM1_EN + month + year, 
+                   data = mDistrict, 
+                   FUN = unique)
+
+dist1$anc1Std <- dist1$anc1 / dist2$sf
+
+dist1$month <- as.character(dist1$month)
+
+dist1$month[dist1$month == "jan"] <- 1
+dist1$month[dist1$month == "feb"] <- 2
+dist1$month[dist1$month == "mar"] <- 3
+dist1$month[dist1$month == "apr"] <- 4
+dist1$month[dist1$month == "may"] <- 5
+dist1$month[dist1$month == "jun"] <- 6
+dist1$month[dist1$month == "jul"] <- 7
+dist1$month[dist1$month == "aug"] <- 8
+dist1$month[dist1$month == "sep"] <- 9
+dist1$month[dist1$month == "oct"] <- 10
+dist1$month[dist1$month == "nov"] <- 11
+dist1$month[dist1$month == "dec"] <- 12
+
+dist1$date <- paste(dist1$year, dist1$month, sep = "-")
+
+dist1$date <- zoo::as.yearmon(dist1$date)
+```
+
+\newpage
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 1, ], aes(as.Date(date), anc1Std)) + 
+  geom_line() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
 ```
 
 
+\newpage
 
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 1, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 2, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 3, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 4, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 5, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 6, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 7, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 8, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 9, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 10, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 11, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 12, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 13, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 14, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 15, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 16, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 17, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 18, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 19, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 20, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 21, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1[dist1$ADM1_PCODE == 22, ], aes(as.Date(date), anc1Std)) + 
+  geom_col() + 
+  scale_x_date(name = "Month") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN)
+```
