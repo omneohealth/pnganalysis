@@ -746,7 +746,7 @@ temp1$date <- zoo::as.yearmon(temp1$date)
 ```{r, echo = TRUE, eval = TRUE, fig.pos = "H", fig.retina = 1}
 ggplot(temp1, aes(as.Date(date), anc1Std)) + 
   geom_line() + 
-  facet_wrap(vars(ADM1_EN), ncol = 6, nrow = 4)
+  facet_wrap(vars(ADM1_EN), ncol = 5, nrow = 5, drop = FALSE)
 ```
 
 
