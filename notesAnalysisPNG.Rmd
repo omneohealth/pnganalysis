@@ -1119,9 +1119,9 @@ The smoothed data can then be plotted alongside the raw data as follows (for pro
 
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 12, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(temp1long, aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() + 
+  geom_line(size = 1) + 
   scale_colour_manual(labels = c("raw", "smooth"), 
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1158,9 +1158,9 @@ dist1long <- gather(data = dist1,
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 1, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1175,9 +1175,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 1, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 2, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1192,9 +1192,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 2, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 3, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1209,9 +1209,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 3, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 4, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1226,9 +1226,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 4, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 5, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1243,9 +1243,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 5, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 6, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1260,9 +1260,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 6, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 7, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1277,9 +1277,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 7, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 8, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1294,9 +1294,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 8, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 9, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1311,9 +1311,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 9, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 10, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1328,9 +1328,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 10, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 11, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1345,9 +1345,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 11, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 12, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1362,9 +1362,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 12, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 13, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1379,9 +1379,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 13, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 14, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1396,9 +1396,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 14, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 15, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1413,9 +1413,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 15, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 16, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1430,9 +1430,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 16, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 17, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1447,9 +1447,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 17, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 18, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1464,9 +1464,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 18, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 19, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1481,9 +1481,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 19, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 20, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1498,9 +1498,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 20, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 21, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
@@ -1515,9 +1515,9 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 21, ],
 ```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(dist1long[dist1long$ADM1_PCODE == 22, ], 
        aes(as.Date(date), value, colour = anc1)) + 
-  geom_line() +
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
   scale_x_date(name = "Month", 
                date_breaks = "1 month", 
                date_labels = "%b %y") +
