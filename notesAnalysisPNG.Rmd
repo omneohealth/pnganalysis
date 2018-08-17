@@ -1,0 +1,553 @@
+---
+title: "Notes on data processing and analysis of available Papua New Guinea datasets"
+author: "Ernest Guevarra"
+date: "16/08/2018"
+output: pdf_document
+geometry: margin=2cm
+classoption: a4paper
+fontsize: 12pt
+highlight: tango
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#
+# Require maptools, rgeos, rgdal, raster
+#
+if(!require(maptools, quietly = TRUE)) install.packages("maptools") # If maptools required but not installed, install
+if(!require(rgeos, quietly = TRUE)) install.packages("rgeos")       # If rgeos required but not installed, install
+if(!require(rgdal, quietly = TRUE)) install.packages("rgdal")       # If rgdal required but not installed, install
+if(!require(raster, quietly = TRUE)) install.packages("raster")     # If raster required but not installed, install
+if(!require(readxl)) install.packages("readxl")                     # to read Excel files
+if(!require(stringr)) install.packages("stringr")                   # to manipulate strings
+#
+# install papuanewguinea R package from OMNeoHealth Github; devtools
+#
+if(!require(devtools, quietly = TRUE)) install.packages("devtools") # If devtools required but not installed, install
+install_github("OMNeoHealth/papuanewguinea")                        # Install OMNeoHealth/papuanewguinea from GitHub
+library(papuanewguinea)                                             # Load papuanewguinea package
+```
+
+
+# 1. Processing and preparing data for analysis and mapping
+
+Given Microsoft Excel files containing data from the Papua New Guinea NHIS per month for 2015 and 2016, we would like to read each of these files and then concatenate them into a single dataset. This can be done in R as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+#
+# Get the filenames of all .XLSX files in folder named "data"
+#
+fileNames <- list.files(path = "data/")
+#
+# Create a concatenating object
+#
+png_maternal <- NULL
+#
+# Loop through each of the XLSX files in data and read them
+#
+for(i in fileNames) {
+  #
+  # Use read_xlsx() to read current filename
+  #
+  temp <- read_xlsx(path = paste("data/", i, sep = ""), 
+                    col_names = FALSE, 
+                    skip = 3)
+  #
+  # extract month of current data
+  #
+  month <- str_split(string = i, pattern = " ")[[1]][1]
+  #
+  # extract year of current data
+  #
+  year <- str_split(string = str_split(string = i, pattern = " ")[[1]][2],
+                    pattern = ".xlsx")[[1]][1]
+  #
+  # Add month variable to temp dataset
+  #
+  temp$month <- month
+  #
+  # Add year variable to temp dataset
+  #
+  temp$year <- year
+  #
+  # concatenate current dataset with png_maternal
+  #
+  png_maternal <- data.frame(rbind(png_maternal, temp))
+}
+```
+
+&nbsp;
+
+This results in a data frame object called `png_maternal` with `r ncol(png_maternal)` columns and `r nrow(png_maternal)` rows. The resulting data frame is as follows (first 60 rows):
+
+&nbsp;
+
+```{r, echo = FALSE, eval = TRUE}
+knitr::kable(x = png_maternal[1:60, ],
+             booktabs = TRUE,                   
+             format = "latex") %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "striped", "scale_down"),
+                            position = "center") %>%
+  kableExtra::landscape()
+```
+
+The object `png_maternal` lacks meaningful column names. Also, it would be good to create codes corresponding to the province code and district codes from the code specified in the first column of `png_maternal`. These can be processed in R as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+################################################################################
+#
+# Get province, district and facility codes
+#
+################################################################################
+#
+# Extract first two digits from code
+#
+png_maternal$pcode <- floor(png_maternal$X__1 / 10000)
+#
+# pad the pcode with a 0 at the start
+#
+png_maternal$pcode <- str_pad(string = png_maternal$pcode, 
+                              width = 2, side = "left", pad = "0")
+#
+# Extract first 4 digits from code
+#
+png_maternal$dcode <- floor(png_maternal$X__1 / 100)
+#
+# pad the dcode with a 0 at the start
+#
+png_maternal$dcode <- str_pad(string = png_maternal$dcode, 
+                              width = 4, side = "left", pad = "0")
+#
+# pad the code with a 0 at the start
+#
+png_maternal$X__1 <- str_pad(string = png_maternal$X__1, 
+                             width = 6, side = "left", pad = "0")
+
+################################################################################
+#
+# Created codebook for PNG maternal mortality data
+#
+################################################################################
+
+longName  <- c("Five to six-digit facility code",
+               "Name of facility",
+               "Report recieved? 1 = YES; 2 = NO",
+               "New attendance breastfeeding pills",
+               "New attendance combined pills",
+               "New attendance injection",
+               "Unkown Number 1",
+               "Permanent vasectomy",
+               "New attendance IUD",
+               "New attendance ovulation",
+               "New attendance condom",
+               "Re-attendance breastfeeding pills",
+               "Re-attendance combined pills",
+               "Re-attendance injection",
+               "Re-attendance IUD",
+               "Re-attendance ovulation",
+               "Re-attendance condom",
+               "Antenatal first visit",
+               "Antenatal fourth visit",
+               "Antenatal other",
+               "Antenatal TT1",
+               "Antenatal TT2",
+               "Antenatal booster",
+               "Unknown Number 2",
+               "Deliveries in health facility",
+               "Maternal deaths in facility",
+               "Birthweight less than 2500 grams",
+               "Stillbirths",
+               "Village births supervised",
+               "Village births complications",
+               "Born before arrival",
+               "Delivery complications",
+               "Maternal deaths not in facility",
+               "Transferred to hospital",
+               "Month", 
+               "Year",
+               "Province code",
+               "District code")
+
+shortName <- c("code", "facility", "report",
+               "bfpills1", "combpills1", "inj1", "uno1", "vasectomy", "iud1", 
+               "ovulation1", "condom1", "bfpills2", "combpills2", "inj2", 
+               "iud2", "ovulation2", "condom2", "anc1", "anc4", "ancother", 
+               "tt1", "tt2", "ttbooster", "uno2", "delhf", "deadhf", "lbw", 
+               "still", "vbsup", "vbcomp", "bba", "delcomp", "deadnothf", 
+               "transhop", "month", "year", "pcode", "dcode")
+
+names(png_maternal) <- shortName
+```
+
+&nbsp;
+
+Checking `png_maternal` object again, we see that the columns have been labeled with more meaningful names and corresponding province and district codes have been added.
+
+```{r, echo = FALSE, eval = TRUE}
+knitr::kable(x = png_maternal[1:60, ],
+             booktabs = TRUE,
+             format = "latex") %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "striped", "scale_down"),
+                            position = "center") %>%
+  kableExtra::landscape()
+```
+
+## a. Processing `png_maternal` to create datasets that can be mapped
+
+Further processing of `png_maternal` can be done to allow for mapping of the data at province and district level.
+
+Province level data can be produced from `png_maternal` as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+#
+# Aggregate data by province and per year
+#
+provincedata <- aggregate(
+  cbind(bfpills1, combpills1, inj1, uno1, vasectomy, iud1, ovulation1, 
+        condom1, bfpills2, combpills2, inj2, iud2, ovulation2, condom2,
+        anc1, anc4, ancother, tt1, tt2, ttbooster, uno2,
+        delhf, deadhf, lbw, still, vbsup, vbcomp, bba, 
+        delcomp, deadnothf, transhop) ~ pcode + year, 
+  data = png_maternal, FUN = sum)
+```
+
+&nbsp;
+
+This produces a data frame object named `provincedata`.
+
+```{r, echo = FALSE, eval = TRUE}
+knitr::kable(x = provincedata[1:60, ],
+             booktabs = TRUE,
+             format = "latex") %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "striped", "scale_down"),
+                            position = "center") %>%
+  kableExtra::landscape()
+```
+
+District level data can be produced from `png_maternal` as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+#
+# Aggregate data by district and per year
+#
+districtdata <- aggregate(
+  cbind(bfpills1, combpills1, inj1, uno1, vasectomy, iud1, ovulation1, 
+        condom1, bfpills2, combpills2, inj2, iud2, ovulation2, condom2,
+        anc1, anc4, ancother, tt1, tt2, ttbooster, uno2,
+        delhf, deadhf, lbw, still, vbsup, vbcomp, bba, 
+        delcomp, deadnothf, transhop) ~ dcode + year, 
+  data = png_maternal, FUN = sum)
+```
+
+&nbsp;
+
+This produces a data frame object named `districtdata`.
+
+```{r, echo = FALSE, eval = TRUE}
+knitr::kable(x = districtdata[1:60, ],
+             booktabs = TRUE,
+             format = "latex") %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "striped", "scale_down"),
+                            position = "center") %>%
+  kableExtra::landscape()
+```
+
+To be able to use `provincedata` and `districtdata`, we will need to standardise the raw counts. The usual way to standardise is by calculating rates usually expressed per 10,000 or per 100,000 of a particular population. However, data on specific populations required for the indicators of interest are not available.
+
+As an alternative, we can use available population data per province and per district as a standardising factor to be able to compare the raw counts with each other. It should be made clear that these are not the same as the standard rates hence are not comparable to those. However, standardised values will allow comparison of values across provinces and districts to show general trends rather than on specific absolute values.
+
+Population data at province and district level of Papua New Guinea is available via the `papuanewguinea` R package. Province population data can be accessed in R via a call to `pop_adm1`. District population data can be accessed in R via a call to `pop_adm2`.
+
+The data frame `pop_adm1` is as follows:
+
+```{r, echo = FALSE, eval = TRUE}
+knitr::kable(x = pop_adm1,
+             booktabs = TRUE,
+             format = "latex") %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "striped", "scale_down"),
+                            position = "center")
+```
+
+\newpage
+
+The data frame `pop_adm2` is as follows:
+
+```{r, echo = FALSE, eval = TRUE}
+knitr::kable(x = pop_adm2,
+             booktabs = TRUE,
+             format = "latex") %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "striped", "scale_down"),
+                            position = "center")
+```
+
+We will need to extract the appropriate information from these population datasets to use for standardising the raw counts. For the type of indicators we will be looking at, the data on population of women of reproductive age would be the most appropirate. This is the data identified as `WRA` in the population datasets.
+
+The most efficient way to work with this population data and the province and district data we produced awhile ago will be to extract the population of women of reproductive age and then attaching it to the province and district data accordingly.
+
+To do this, we will first need to organise the population data in such a way that it can be merged with the province data.
+
+First, we need to extract the data columns that we need from the population data. These will be the province name, the province code and the women of reproductive age population.
+
+For the province population, this can be done as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+wra_adm1 <- pop_adm1[ , c("ADM1_PCODE", "ADM1_EN", "WRA")]
+```
+
+&nbsp;
+
+This produces the following data frame object:
+
+```{r, echo = FALSE, eval = TRUE}
+knitr::kable(x = wra_adm1,
+             booktabs = TRUE,
+             format = "latex") %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "striped"),
+                            position = "center")
+```
+
+For the district population, this can be done as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+wra_adm2 <- pop_adm2[ , c("ADM2_PCODE", "ADM2_EN", "ADM1_PCODE", "ADM1_EN", "WRA")]
+```
+
+&nbsp;
+
+This produces the following data frame object:
+
+```{r, echo = FALSE, eval = TRUE}
+knitr::kable(x = wra_adm2[1:40, ],
+             booktabs = TRUE,
+             format = "latex") %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "striped", "scale_down"),
+                            position = "center")
+```
+
+Then, we need to organise the population datasets such that the rows of data are in the same sequence as that of the province and district data. This means, the population datasets will have to be ordered in such a way that the province code and district code are sequential. We see that the population datasets are not sequential and as such will need to be re-ordered. This can be done in R as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+wra_adm1 <- wra_adm1[order(wra_adm1$ADM1_PCODE), ]
+wra_adm2 <- wra_adm2[order(wra_adm2$ADM2_PCODE), ]
+```
+
+&nbsp;
+
+We now need to adjust the admin codes to match the admin codes in the province and district data. We notice that the population admin codes start with `PG` whilst the province and district data don't have this. So, we should adjust the population codes by removing the appended `PG`. This can be done as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+wra_adm1$ADM1_PCODE <- as.numeric(str_replace(wra_adm1$ADM1_PCODE, "PG", ""))
+wra_adm2$ADM2_PCODE <- as.numeric(str_replace(wra_adm2$ADM2_PCODE, "PG", ""))
+wra_adm2$ADM1_PCODE <- as.numeric(str_replace(wra_adm2$ADM1_PCODE, "PG", ""))
+```
+
+&nbsp;
+
+Once the admin codes have been adjusted, we should now calculate a standardising factor which we will call `sf`. Using the population size for women of reproductive age (WRA), we divide this by 100,000 to get a standardising factor that will give an indicator value that is per 100,000 WRA population. This can be done as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+wra_adm1$sf <- wra_adm1$WRA / 100000
+wra_adm2$sf <- wra_adm2$WRA / 100000
+```
+
+&nbsp;
+
+Once the standardising factor (`sf`) is calculated, the population data can now be merged with the province and district data respectively. 
+
+For the province data, this can be done in R as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+provincedata <- merge(wra_adm1, 
+                      provincedata, 
+                      by.x = "ADM1_PCODE", 
+                      by.y = "pcode")
+```
+
+&nbsp;
+
+For the district data, we will need to do some processing of the district data because there are two additional districts for the National Capital District whilst in the population data and the map data, there is only one. This can be adjusted in such a way that we can collapse the district data for the National Capital District into a single district. This can be done as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+x <- colSums(districtdata[districtdata$dcode %in% c(401, 402, 403) & 
+                            districtdata$year == 2015, ])
+y <- colSums(districtdata[districtdata$dcode %in% c(401, 402, 403) & 
+                            districtdata$year == 2016, ])
+
+xy <- rbind(x, y)
+
+xy[1,1] <- 401
+xy[2,1] <- 401
+
+xy[1,2] <- 2015
+xy[2,2] <- 2016
+
+districtdata <- data.frame(rbind(
+  districtdata[!districtdata$dcode %in% c(401, 402, 403), ], xy))
+```
+
+&nbsp;
+
+Once the district data has been adjusted, we can now merge the district data with the district population data. This can be done in R as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+districtdata <- merge(wra_adm2, 
+                      districtdata, 
+                      by.x = "ADM2_PCODE", 
+                      by.y = "dcode")
+```
+
+&nbsp;
+
+We now have processed datasets for province and district data that has all the information needed to produce various analysis outputs.
+
+## b. Processing `png_maternal` to create datasets that can be used for time series analysis
+
+Further processing of `png_maternal` can be done to allow for time series analysis of the data at monthly intervals for year 2015 and 2016.
+
+Monthly province level data can be produced from `png_maternal` as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+#
+# Aggregate data by month and per year
+#
+mProvince <- aggregate(
+  cbind(bfpills1, combpills1, inj1, uno1, vasectomy, iud1, ovulation1, 
+        condom1, bfpills2, combpills2, inj2, iud2, ovulation2, condom2,
+        anc1, anc4, ancother, tt1, tt2, ttbooster, uno2,
+        delhf, deadhf, lbw, still, vbsup, vbcomp, bba, 
+        delcomp, deadnothf, transhop) ~ month + pcode + year, 
+  data = png_maternal, FUN = sum)
+```
+
+&nbsp;
+
+This produces a data frame object named `mProvince`.
+
+```{r, echo = FALSE, eval = TRUE}
+knitr::kable(x = mProvince[1:60, ],
+             booktabs = TRUE,
+             format = "latex") %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "striped", "scale_down"),
+                            position = "center") %>%
+  kableExtra::landscape()
+```
+
+Monthly district level data can be produced from `png_maternal` as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+#
+# Aggregate data by district and per year
+#
+mDistrict <- aggregate(
+  cbind(bfpills1, combpills1, inj1, uno1, vasectomy, iud1, ovulation1, 
+        condom1, bfpills2, combpills2, inj2, iud2, ovulation2, condom2,
+        anc1, anc4, ancother, tt1, tt2, ttbooster, uno2,
+        delhf, deadhf, lbw, still, vbsup, vbcomp, bba, 
+        delcomp, deadnothf, transhop) ~ month + dcode + year, 
+  data = png_maternal, FUN = sum)
+```
+
+&nbsp;
+
+This produces a data frame object named `mDistrict`.
+
+```{r, echo = FALSE, eval = TRUE}
+knitr::kable(x = mDistrict[1:60, ],
+             booktabs = TRUE,
+             format = "latex") %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "striped", "scale_down"),
+                            position = "center") %>%
+  kableExtra::landscape()
+```
+
+We can then merge these datasets with the population data that contains the standardising factor. This can be done as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+mProvince <- merge(wra_adm1, mProvince, by.x = "ADM1_PCODE", by.y = "pcode")
+```
+
+&nbsp;
+
+For the district data, we will need to make the same adjustments we did to the district data. This can be done as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+x <- aggregate(
+       cbind(dcode, year, bfpills1, combpills1, inj1, uno1, vasectomy, iud1, 
+             ovulation1, condom1, bfpills2, combpills2, inj2, iud2, ovulation2, 
+             condom2, anc1, anc4, ancother, tt1, tt2, ttbooster, uno2, 
+             delhf, deadhf, lbw, still, vbsup, vbcomp, bba, delcomp, deadnothf, 
+             transhop) ~ month, 
+       data = mDistrict[mDistrict$dcode %in% c(401, 402, 403) & 
+                          mDistrict$year == 2015, ], 
+       FUN = sum)
+
+
+y <- aggregate(
+       cbind(dcode, year, bfpills1, combpills1, inj1, uno1, vasectomy, iud1, 
+             ovulation1, condom1, bfpills2, combpills2, inj2, iud2, ovulation2, 
+             condom2, anc1, anc4, ancother, tt1, tt2, ttbooster, uno2, 
+             delhf, deadhf, lbw, still, vbsup, vbcomp, bba, delcomp, deadnothf, 
+             transhop) ~ month, 
+       data = mDistrict[mDistrict$dcode %in% c(401, 402, 403) & 
+                          mDistrict$year == 2016, ], 
+       FUN = sum)
+
+xy <- rbind(x, y)
+
+xy$dcode <- 401
+
+xy[ 1:12, 3] <- 2015
+xy[13:24, 3] <- 2016
+
+mDistrict <- data.frame(rbind(
+  mDistrict[!mDistrict$dcode %in% c(401, 402, 403), ], xy))
+```
+
+&nbsp;
+
+The resulting `mDistrict` data can now be merged with the district population data as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+mDistrict <- merge(wra_adm2, mDistrict, by.x = "ADM2_PCODE", by.y = "dcode")
+```
+
+We now have processed datasets for time series province and district data that has all the information needed to produce various analysis outputs.
+
+
+
+
+
