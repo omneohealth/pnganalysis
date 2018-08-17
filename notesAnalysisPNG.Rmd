@@ -22,6 +22,9 @@ if(!require(readxl)) install.packages("readxl")                     # to read Ex
 if(!require(stringr)) install.packages("stringr")                   # to manipulate strings
 if(!require(ggplot2)) install.packages("ggplot2")                   # for plotting
 if(!require(zoo)) install.packages("zoo")                           # for dates
+if(!require(dplyr)) install.packages("dplyr")                       # for data manipulation
+if(!require(tidyr)) install.packages("tidyr")                       # for data manipulation
+if(!require(classInt)) install.packages("classInt")                 # for classifying for mapping
 #
 # install papuanewguinea R package from OMNeoHealth Github; devtools
 #
@@ -187,7 +190,7 @@ names(png_maternal) <- shortName
 
 &nbsp;
 
-Checking `png_maternal` object again, we see that the columns have been labeled with more meaningful names and corresponding province and district codes have been added.
+Checking `png_maternal` object again, we see that the columns have been labelled with more meaningful names and corresponding province and district codes have been added.
 
 ```{r, echo = FALSE, eval = TRUE}
 knitr::kable(x = png_maternal[1:60, ],
@@ -290,7 +293,7 @@ knitr::kable(x = pop_adm2,
                             position = "center")
 ```
 
-We will need to extract the appropriate information from these population datasets to use for standardising the raw counts. For the type of indicators we will be looking at, the data on population of women of reproductive age would be the most appropirate. This is the data identified as `WRA` in the population datasets.
+We will need to extract the appropriate information from these population datasets to use for standardising the raw counts. For the type of indicators we will be looking at, the data on population of women of reproductive age would be the most appropriate. This is the data identified as `WRA` in the population datasets.
 
 The most efficient way to work with this population data and the province and district data we produced awhile ago will be to extract the population of women of reproductive age and then attaching it to the province and district data accordingly.
 
@@ -711,13 +714,13 @@ n_{WRA} ~ = ~ & \text{Number of women of reproductive age}
 
 # 2. Time-series analysis of monthly NHIS data
 
-Using the data frame objects mProvince and mDistricts, we can now produce time-series analysis of specific indicators specified above.
+Using the data frame objects `mProvince` and `mDistricts`, we can now produce time-series analysis of specific indicators specified above.
 
 ## At least one antenatal care visit with a trained health worker
 
 We first work with the province data.
 
-We will work with the data columns labeled `anc1` and `sf`
+We will work with the data columns labelled `anc1` and `sf`
 
 ```{r, echo = TRUE, eval = TRUE}
 temp1 <- aggregate(anc1 ~ ADM1_PCODE + ADM1_EN + month + year, 
@@ -747,6 +750,18 @@ temp1$month[temp1$month == "dec"] <- 12
 temp1$date <- paste(temp1$year, temp1$month, sep = "-")
 
 temp1$date <- zoo::as.yearmon(temp1$date)
+
+temp1 <- temp1[order(temp1$date), ]
+
+temp1 <- temp1 %>%
+  group_by(ADM1_EN) %>%
+  mutate(anc1Sm = rollmean(x = anc1Std, k = 3, na.pad = TRUE))
+
+temp1long <- gather(data = temp1, 
+                    key = "anc1", 
+                    value = "value", 
+                    anc1Std, anc1Sm, 
+                    factor_key = TRUE)
 ```
 
 ```{r, echo = TRUE, eval = TRUE}
@@ -764,21 +779,7 @@ themeSettings <- theme_bw() +
 
 ```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 12, fig.align = "center", fig.pos = "H", fig.retina = 1}
 ggplot(temp1, aes(as.Date(date), anc1Std)) + 
-  geom_line(colour = "#08519c", size = 1) + 
-  scale_x_date(name = "Month", date_breaks = "1 month", date_labels = "%b %y") +
-  scale_y_continuous(name = "ANC1", 
-                     breaks = seq(from = 0, 
-                                  to = max(temp1$anc1Std), 
-                                  by = 500)) + 
-  facet_wrap(vars(ADM1_EN)) +
-  themeSettings
-```
-
-\newpage
-
-```{r, echo = FALSE, eval = FALSE, fig.width = 12, fig.height = 12, fig.align = "center", fig.pos = "H", fig.retina = 1}
-ggplot(temp1, aes(as.Date(date), anc1Std)) + 
-  geom_col(colour = "#08519c", fill = "#08519c", size = 0.1) + 
+  geom_line() + 
   scale_x_date(name = "Month", date_breaks = "1 month", date_labels = "%b %y") +
   scale_y_continuous(name = "ANC1", 
                      breaks = seq(from = 0, 
@@ -1088,4 +1089,559 @@ ggplot(dist1[dist1$ADM1_PCODE == 22, ], aes(as.Date(date), anc1Std)) +
                                   by = 100)) + 
   facet_grid(ADM1_EN ~ ADM2_EN) +
   themeSettings
+```
+
+### Smoothing time-series data
+
+In the line charts above, we will notice that it is not very easy to see the trend of the indicators over time. Smoothing the time-series data is usually done to address this. Smoothing is usually performed using a rolling/running averages. This can be done in R using the function `rollmean()` from the `zoo` package and is implemented as shown below:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+temp1 <- temp1[order(temp1$date), ]
+
+temp1 <- temp1 %>%
+  group_by(ADM1_EN) %>%
+  mutate(anc1Sm = rollmean(x = anc1Std, k = 3, na.pad = TRUE))
+
+temp1long <- gather(data = temp1, 
+                    key = "anc1", 
+                    value = "value", 
+                    anc1Std, anc1Sm, 
+                    factor_key = TRUE)
+```
+
+&nbsp;
+
+The smoothed data can then be plotted alongside the raw data as follows (for province data):
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 12, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(temp1long, aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() + 
+  scale_colour_manual(labels = c("raw", "smooth"), 
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(temp1$anc1Std), 
+                                  by = 500)) + 
+  facet_wrap(vars(ADM1_EN)) +
+  themeSettings
+```
+
+&nbsp;
+
+We can do the same for the district data.
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+dist1 <- dist1[order(dist1$date), ]
+
+dist1 <- dist1 %>%
+  group_by(ADM2_EN) %>%
+  mutate(anc1Sm = rollmean(x = anc1Std, k = 3, na.pad = TRUE))
+
+dist1long <- gather(data = dist1, 
+                    key = "anc1", 
+                    value = "value", 
+                    anc1Std, anc1Sm, 
+                    factor_key = TRUE)
+```
+
+\newpage
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 1, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 500)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 2, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 3, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 4, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 5, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 6, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 7, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 8, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 9, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 10, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 11, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 12, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 13, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 14, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 15, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 1000)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 16, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 17, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 18, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 19, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 20, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 21, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+```{r, echo = TRUE, eval = TRUE, warning = FALSE, fig.width = 12, fig.height = 4, fig.align = "center", fig.pos = "H", fig.retina = 1}
+ggplot(dist1long[dist1long$ADM1_PCODE == 22, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line() +
+  scale_colour_manual(labels = c("raw", "smooth"),
+                      values = c("#e41a1c", "#377eb8")) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
+               date_labels = "%b %y") +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(ADM1_EN ~ ADM2_EN) +
+  themeSettings
+```
+
+&nbsp;
+
+These approaches can be used for all the indicators.
+
+# 3. Mapping of spatial distribution of indicators
+
+The `provincedata` and the `districtdata` data frame objects are to be used for mapping. In addition, the `province` and `district` map data from the `papuanewguinea` package is for plotting the boundaries.
+
+First, let us inspect the `province` and the `district` map objects.
+
+&nbsp;
+
+```{r, echo = FALSE, eval = TRUE}
+knitr::kable(x = province@data,
+             booktabs = TRUE,
+             format = "latex") %>%
+  kableExtra::kable_styling(latex_options = c("HOLD_position", "striped", "scale_down"),
+                            position = "center")
+```
+
+&nbsp;
+
+We notice that the order of the provinces are not sequential based on administrative code. We will need to re-order this in such a way that the admin codes are sequential. This can be done as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+province@data <- province@data[order(province@data$ADM1_PCODE), ]
+```
+
+&nbsp;
+
+We can now map the `provincedata`. For this, we will use `anc1` as our index indicator.
+
+The first thing we need to do is to standardise the `anc1` indicator in the same way we did earlier in the time-series analysis. This can be done as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+anc1Province <- provincedata[ , c("ADM1_PCODE", "ADM1_EN", "WRA", 
+                                  "sf", "year", "anc1")]
+
+anc1Province$anc1Std <- anc1Province$anc1 / anc1Province$sf
+```
+
+&nbsp;
+
+We then need to classify the standardised `anc1` values into groups/classes that will allow us to colour the province based on their `anc1` classification. We can use an approach in which the standardised `anc1` counts are grouped into meaningful classes. A useful approach will be using quantiles. For this, we can use the R package called `classInt` which has a function called `classIntervals()`. The `anc1` can be classified as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+anc1Province$class <- cut(x = anc1Province$anc1Std,
+                          breaks = classIntervals(var = anc1Province$anc1Std, 
+                                                  n = 5, 
+                                                  style = "quantile")$brks,
+                          labels = FALSE)
+
+anc1Province$class <- ifelse(is.na(anc1Province$class), 0, anc1Province$class)
+```
+
+&nbsp;
+
+We can now map the `anc1` indicator for year 2015 and year 2016 as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 6, fig.align = "center", fig.pos = "H", fig.retina = 1}
+colourscheme <- c("#eff3ff", "#c6dbef", "#9ecae1", 
+                  "#6baed6", "#3182bd", "#08519c")
+
+par(mar = c(0, 0, 0, 0), mfrow = c(1, 2))
+
+plot(province,
+     col = colourscheme[anc1Province$class[anc1Province$year == 2015] + 1],
+     border = "gray90",
+     lwd = 0.5)
+
+plot(province,
+     col = colourscheme[anc1Province$class[anc1Province$year == 2016] + 1],
+     border = "gray90",
+     lwd = 0.5)
+```
+
+&nbsp;
+
+Now, it will be useful to add a title to each plot to identify which map is for which year and to add a legend to show what the colours refer to. This can be done as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE, message = FALSE, fig.width = 12, fig.height = 6, fig.align = "center", fig.pos = "H", fig.retina = 1}
+par(mar = c(0, 0, 0, 0), mfrow = c(1, 2))
+
+plot(province,
+     col = colourscheme[anc1Province$class[anc1Province$year == 2015] + 1],
+     border = "gray90",
+     lwd = 0.5)
+title(main = "At least one antenatal care visits in 2015", line = -1, adj = 1)
+
+plot(province,
+     col = colourscheme[anc1Province$class[anc1Province$year == 2016] + 1],
+     border = "gray90",
+     lwd = 0.5)
+title(main = "At least one antenatal care visits in 2016", line = -1, adj = 1)
+legend(x = "bottomright",
+       inset = 0.1,
+       y.intersp = 1.2,
+       legend = c("0", names(print(classIntervals(anc1Province$anc1Std,
+                                                  n = 5,
+                                                  style = "quantile",
+                                                  dataPrecision = 0), 
+                                   between = "to", 
+                                   cutlabels = FALSE))),
+       pch = 15, pt.cex = 2,
+       col = colourscheme)
 ```
