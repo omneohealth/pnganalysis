@@ -1648,3 +1648,16 @@ legend(x = "bottomright",
        pch = 15, pt.cex = 2,
        col = colourscheme)
 ```
+
+&nbsp;
+
+We can now map the `districtdata`. For this, we will use `anc1` as our index indicator.
+
+The first thing we need to do is to standardise the `anc1` indicator in the same way we did earlier in the time-series analysis. This can be done as follows:
+
+```{r, echo = TRUE, eval = TRUE}
+anc1District <- districtdata[ , c("ADM1_PCODE", "ADM1_EN", "ADM2_PCODE", "ADM2_EN", "WRA", 
+                                  "sf", "year", "anc1")]
+
+anc1District$anc1Std <- anc1District$anc1 / anc1District$sf
+```
