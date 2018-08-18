@@ -1653,11 +1653,87 @@ legend(x = "bottomright",
 
 We can now map the `districtdata`. For this, we will use `anc1` as our index indicator.
 
-The first thing we need to do is to standardise the `anc1` indicator in the same way we did earlier in the time-series analysis. This can be done as follows:
+We will need to reorder the `district` map sequentially based on administrative code. This can be done as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+district@data <- district@data[order(district@data$ADM2_PCODE), ]
+```
+
+&nbsp;
+
+We now need to standardise the `anc1` indicator in the same way we did earlier in the time-series analysis. This can be done as follows:
 
 ```{r, echo = TRUE, eval = TRUE}
 anc1District <- districtdata[ , c("ADM1_PCODE", "ADM1_EN", "ADM2_PCODE", "ADM2_EN", "WRA", 
                                   "sf", "year", "anc1")]
 
 anc1District$anc1Std <- anc1District$anc1 / anc1District$sf
+```
+
+&nbsp;
+
+We then need to classify the standardised `anc1` values into groups/classes that will allow us to colour the districts based on their `anc1` classification. We can use an approach in which the standardised `anc1` counts are grouped into meaningful classes. A useful approach will be using quantiles. For this, we can use the R package called `classInt` which has a function called `classIntervals()`. The `anc1` can be classified as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE}
+anc1District$class <- cut(x = anc1District$anc1Std,
+                          breaks = classIntervals(var = anc1District$anc1Std, 
+                                                  n = 5, 
+                                                  style = "quantile")$brks,
+                          labels = FALSE)
+
+anc1District$class <- ifelse(is.na(anc1District$class), 0, anc1District$class)
+```
+
+&nbsp;
+
+We can now do some final inspection of whether the districts in the map data correspond to the districts in `districdata`.
+
+Checking the number of districts, we note that there is one district more in the map data compared to the `districtdata`. District with administrative code 0905 is not included in `districtdata`. To be able to map, we can create additional rows of data corresponding to this district and then just adding `NA` data. This can be done as follows:
+
+&nbsp;
+
+```{r, echo = FALSE, eval = TRUE}
+anc1District$ADM2_PCODE <- as.numeric(anc1District$ADM2_PCODE)
+```
+
+```{r, echo = TRUE, eval = TRUE}
+rowdata <- anc1District[1:2, ]
+rowdata$ADM2_PCODE <- c(905, 905)
+rowdata$ADM2_EN <- c("Mul/Baiyer District", "Mul/Baiyer District")
+rowdata$WRA <- rep(as.numeric(pop_adm2[pop_adm2$ADM2_PCODE == "PG0905", "WRA"]), 2)
+rowdata$sf <- rowdata$WRA / 100000
+rowdata$anc1 <- NA
+rowdata$anc1Std <- NA
+rowdata$class <- NA
+
+anc1District <- data.frame(rbind(anc1District, rowdata))
+
+anc1District <- anc1District[order(anc1District$ADM2_PCODE), ]
+```
+
+&nbsp;
+
+We can now map the `anc1` indicator for year 2015 and year 2016 as follows:
+
+&nbsp;
+
+```{r, echo = TRUE, eval = TRUE, fig.width = 12, fig.height = 6, fig.align = "center", fig.pos = "H", fig.retina = 1}
+colourscheme <- c("#eff3ff", "#c6dbef", "#9ecae1", 
+                  "#6baed6", "#3182bd", "#08519c")
+
+par(mar = c(0, 0, 0, 0), mfrow = c(1, 2))
+
+plot(district,
+     col = colourscheme[anc1District$class[anc1District$year == 2015] + 1],
+     border = "gray90",
+     lwd = 0.5)
+
+plot(district,
+     col = colourscheme[anc1District$class[anc1District$year == 2016] + 1],
+     border = "gray90",
+     lwd = 0.5)
 ```
