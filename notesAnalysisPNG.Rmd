@@ -769,6 +769,7 @@ themeSettings <- theme_bw() +
                    theme(panel.grid.major = element_line(linetype = 1, 
                                                          size = 0.2, 
                                                          colour = "gray80"),
+                         panel.grid.minor = element_line(linetype = 0),
                          axis.text.x = element_text(size = 6, angle = 90),
                          legend.key = element_rect(linetype = 0), 
                          legend.key.size = unit(1, "cm"),
