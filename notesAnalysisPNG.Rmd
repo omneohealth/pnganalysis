@@ -1666,7 +1666,8 @@ district@data <- district@data[order(district@data$ADM2_PCODE), ]
 We now need to standardise the `anc1` indicator in the same way we did earlier in the time-series analysis. This can be done as follows:
 
 ```{r, echo = TRUE, eval = TRUE}
-anc1District <- districtdata[ , c("ADM1_PCODE", "ADM1_EN", "ADM2_PCODE", "ADM2_EN", "WRA", 
+anc1District <- districtdata[ , c("ADM1_PCODE", "ADM1_EN", 
+                                  "ADM2_PCODE", "ADM2_EN", "WRA", 
                                   "sf", "year", "anc1")]
 
 anc1District$anc1Std <- anc1District$anc1 / anc1District$sf
@@ -1704,7 +1705,9 @@ anc1District$ADM2_PCODE <- as.numeric(anc1District$ADM2_PCODE)
 rowdata <- anc1District[1:2, ]
 rowdata$ADM2_PCODE <- c(905, 905)
 rowdata$ADM2_EN <- c("Mul/Baiyer District", "Mul/Baiyer District")
-rowdata$WRA <- rep(as.numeric(pop_adm2[pop_adm2$ADM2_PCODE == "PG0905", "WRA"]), 2)
+rowdata$WRA <- rep(as.numeric(pop_adm2[pop_adm2$ADM2_PCODE == "PG0905", 
+                                       "WRA"]), 
+                   2)
 rowdata$sf <- rowdata$WRA / 100000
 rowdata$anc1 <- NA
 rowdata$anc1Std <- NA
