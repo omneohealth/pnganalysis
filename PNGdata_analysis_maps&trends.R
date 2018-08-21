@@ -269,7 +269,7 @@ title(main = "Maternal deaths 2015", line = -1, adj = 1)
 legend(x = "bottomright",
        inset = 0.1,
        y.intersp = 1.2,
-       legend = c("0", names(print(classIntervals(deathprov2015,
+       legend = c("0", names(print(classIntervals(c(deathprov2015,deathprov2015),
                                                   n = 5,
                                                   style = "quantile",
                                                   dataPrecision = 0),
@@ -286,7 +286,7 @@ title(main = "Maternal deaths 2016", line = -1, adj = 1)
 legend(x = "bottomright",
        inset = 0.1,
        y.intersp = 1.2,
-       legend = c("0", names(print(classIntervals(deathprov2016,
+       legend = c("0", names(print(classIntervals(c(deathprov2015,deathprov2015),
                                                   n = 5,
                                                   style = "quantile",
                                                   dataPrecision = 0),
@@ -356,6 +356,131 @@ legend(x = "bottomright",
                                                  cutlabels = FALSE))),
                                                   pch = 15, pt.cex = 2,
                                                     col = colourscheme)
+
+#########################################################################
+# map LBW per province 
+#########################################################################
+#
+## normalised LBW per province per WRA/ 100 000 (sf)
+lbw2015p <- (pdata2015$lbw/pop_adm1$WRA) * 100000
+lbw2016p <- (pdata2016$lbw/pop_adm1$WRA) * 100000
+#
+# map lbw per province normalised by WRA x 100000
+#
+# first create classification of LBW
+lbw2015pclass <- cut (x = lbw2015p,
+                        breaks = classIntervals(lbw2015p,
+                                                n = 5, style = "quantile") $brks, 
+                        labels = FALSE)
+
+lbw2016pclass <- cut (x = lbw2016p,
+                        breaks = classIntervals(lbw2016p,
+                                                n = 5, style = "quantile") $brks, 
+                        labels = FALSE)
+##Recode NA class to 0
+lbw2015pclass <- ifelse(is.na(lbw2015pclass), 0, lbw2015pclass)
+lbw2016pclass <- ifelse(is.na(lbw2016pclass), 0, lbw2016pclass)
+
+###################################################################
+# plot side by side LBW map 2015, 2016 per province
+###################################################################
+par(mar = c(0, 0, 0, 0), mfrow = c(1, 2))
+plot(province,
+     col = colourscheme[lbw2015pclass + 1],
+     border = "gray90",
+     lwd = 0.5)
+title(main = "Low Birth Weight 2015", line = -1, adj = 1)
+legend(x = "bottomright",
+       inset = 0.1,
+       y.intersp = 1.2,
+       legend = c("0", names(print(classIntervals(c(lbw2015p, lbw2015p),
+                                                  n = 5,
+                                                  style = "quantile",
+                                                  dataPrecision = 0),
+                                   between = "to",
+                                   cutlabels = FALSE))),
+       pch = 15, pt.cex = 2,
+       col = colourscheme)
+
+plot(province,
+     col = colourscheme[lbw2016pclass + 1],
+     border = "gray90",
+     lwd = 0.5)
+title(main = "Low Birth Weight 2016", line = -1, adj = 1)
+legend(x = "bottomright",
+       inset = 0.1,
+       y.intersp = 1.2,
+       legend = c("0", names(print(classIntervals(c(lbw2015p, lbw2015p),
+                                                  n = 5,
+                                                  style = "quantile",
+                                                  dataPrecision = 0),
+                                   between = "to",
+                                   cutlabels = FALSE))),
+       pch = 15, pt.cex = 2,
+       col = colourscheme)
+
+#########################################################################
+# map delivered in health facility per province 
+#########################################################################
+#
+## normalised delhf per province per WRA/ 100 000 (sf)
+delhf2015p <- (pdata2015$delhf/pop_adm1$WRA) * 100000
+delhf2016p <- (pdata2016$delhf/pop_adm1$WRA) * 100000
+#
+# map delhf per province normalised by WRA x 100000
+#
+# first create classification of delhf
+delhf2015pclass <- cut (x = delhf2015p,
+                      breaks = classIntervals(delhf2015p,
+                                              n = 5, style = "quantile") $brks, 
+                      labels = FALSE)
+
+delhf2016pclass <- cut (x = delhf2016p,
+                      breaks = classIntervals(delhf2016p,
+                                              n = 5, style = "quantile") $brks, 
+                      labels = FALSE)
+##Recode NA class to 0
+delhf2015pclass <- ifelse(is.na(delhf2015pclass), 0, delhf2015pclass)
+delhf2016pclass <- ifelse(is.na(delhf2016pclass), 0, delhf2016pclass)
+
+###################################################################
+# plot side by side delhf map 2015, 2016 per province
+###################################################################
+par(mar = c(0, 0, 0, 0), mfrow = c(1, 2))
+plot(province,
+     col = colourscheme[delhf2015pclass + 1],
+     border = "gray90",
+     lwd = 0.5)
+title(main = "Delivered in health facility 2015", line = -1, adj = 1)
+legend(x = "bottomright",
+       inset = 0.1,
+       y.intersp = 1.2,
+       legend = c("0", names(print(classIntervals(c(delhf2015p, delhf2015p),
+                                                  n = 5,
+                                                  style = "quantile",
+                                                  dataPrecision = 0),
+                                   between = "to",
+                                   cutlabels = FALSE))),
+       pch = 15, pt.cex = 2,
+       col = colourscheme)
+
+plot(province,
+     col = colourscheme[delhf2016pclass + 1],
+     border = "gray90",
+     lwd = 0.5)
+title(main = "Delivered in health facility 2016", line = -1, adj = 1)
+legend(x = "bottomright",
+       inset = 0.1,
+       y.intersp = 1.2,
+       legend = c("0", names(print(classIntervals(c(delhf2015p, delhf2015p),
+                                                  n = 5,
+                                                  style = "quantile",
+                                                  dataPrecision = 0),
+                                   between = "to",
+                                   cutlabels = FALSE))),
+       pch = 15, pt.cex = 2,
+       col = colourscheme)
+
 
 ###################################################################################
 # create trends by months
