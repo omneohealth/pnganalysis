@@ -31,6 +31,8 @@ femprov <- pop_adm1$FEMALES
 
 # use femprov to normalise maternal deaths per province
 
+deathprov2016 <- (pdata2016$totaldead/femprov)*100000
+
 pop <- data.frame("pcode" = 1:22, "pop" = deathprov2016)
 
 pdata2016 <- merge(pdata2016, pop, by = "pcode")
