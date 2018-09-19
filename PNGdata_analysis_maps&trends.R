@@ -713,5 +713,5 @@ ggplot(dist1long[dist1long$ADM1_PCODE == 3, ],
                      breaks = seq(from = 0,
                                   to = max(dist1$anc1Std),
                                   by = 100)) +
-  facet_grid(ADM1_EN ~ ADM2_EN) +
+  facet_grid (ADM1_EN ~ ADM2_EN) +
   themeSettings
