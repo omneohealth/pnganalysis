@@ -505,6 +505,10 @@ mDistrict <- aggregate(
         delcomp, deadnothf, transhop) ~ month + dcode + year,
   data = png_maternal, FUN = sum)
 
+########### Convert dcode to numeric
+mDistrict$dcode <- as.numeric(mDistrict$dcode)
+mDistrict$year <- as.numeric(mDistrict$year)
+
 #merge these datasets with the population data that contains the standardising factor.
 # for monthly province
 mProvince <- merge(wra_adm1, mProvince, by.x = "ADM1_PCODE", by.y = "pcode")
@@ -532,6 +536,7 @@ xy <- rbind(x, y)
 xy$dcode <- 401
 xy[ 1:12, 3] <- 2015
 xy[13:24, 3] <- 2016
+#mDistrict <- subset (mDistrict, select = -year)
 mDistrict <- data.frame(rbind(
   mDistrict[!mDistrict$dcode %in% c(401, 402, 403), ], xy))
 
@@ -701,17 +706,17 @@ dist1long <- gather(data = dist1,
 #
 # plot smooth and raw district data for central province
 #
-ggplot(dist1long[dist1long$ADM1_PCODE == 3, ],
-       aes(as.Date(date), value, colour = anc1)) +
-  geom_line() +
+ggplot(dist1long[dist1long$ADM1_PCODE == 3, ], 
+       aes(as.Date(date), value, colour = anc1)) + 
+  geom_line(size = 1) +
   scale_colour_manual(labels = c("raw", "smooth"),
-                      values = c("#e41a1c", "#377eb8")) +
-  scale_x_date(name = "Month",
-               date_breaks = "1 month",
+                      values = c("#e41a1c", alpha("#377eb8", 0.3))) +
+  scale_x_date(name = "Month", 
+               date_breaks = "1 month", 
                date_labels = "%b %y") +
-  scale_y_continuous(name = "ANC1",
-                     breaks = seq(from = 0,
-                                  to = max(dist1$anc1Std),
-                                  by = 100)) +
-  facet_grid (ADM1_EN ~ ADM2_EN) +
+  scale_y_continuous(name = "ANC1", 
+                     breaks = seq(from = 0, 
+                                  to = max(dist1$anc1Std), 
+                                  by = 100)) + 
+  facet_grid(rows = vars(ADM1_EN), cols = vars(ADM2_EN)) +
   themeSettings
